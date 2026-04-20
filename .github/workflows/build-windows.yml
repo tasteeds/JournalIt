@@ -1,0 +1,38 @@
+name: Build JournalIt (Windows)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  PROJECT_FOLDER: 'JournalIt'   # path to folder containing JournalIt.csproj
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find MSBuild
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) { Write-Error "vswhere not found"; exit 1 }
+          $msbuild = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find '**\MSBuild\**\Bin\MSBuild.exe'
+          if (-not $msbuild) { Write-Error "MSBuild not found by vswhere"; exit 1 }
+          Write-Output "MSBuild found: $msbuild"
+          echo "MSBUILD_PATH=$msbuild" | Out-File -FilePath msbuildpath.txt
+
+      - name: Build (Release) with MSBuild
+        shell: pwsh
+        run: |
+          $msbuild = (Get-Content msbuildpath.txt).Trim()
+          & $msbuild "$env:JournalIt\JournalIt.csproj" /p:Configuration=Release
+
+      - name: Upload Release EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: JournalIt-windows-exe
+          path: ${{ env.JournalIt}}\bin\Release\**\*
