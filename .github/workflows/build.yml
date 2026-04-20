@@ -1,0 +1,35 @@
+name: Build Release .exe
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'    # adjust to project's target (6.0, 7.0, etc.)
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build (Release)
+        run: dotnet build -c Release --no-restore
+
+      - name: Publish for win-x64
+        run: |
+          cd JournalIt/ # replace with actual folder containing the .csproj (or remove if root)
+          dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true --self-contained false -o publish
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: JournalIt-windows-exe
+          path: |
+            JournalIt/publish/**
