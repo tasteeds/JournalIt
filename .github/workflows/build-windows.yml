@@ -23,13 +23,14 @@ jobs:
           $msbuild = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find '**\MSBuild\**\Bin\MSBuild.exe'
           if (-not $msbuild) { Write-Error "MSBuild not found by vswhere"; exit 1 }
           Write-Output "MSBuild found: $msbuild"
-          echo "MSBUILD_PATH=$msbuild" | Out-File -FilePath msbuildpath.txt
+          $msbuild | Out-File -FilePath msbuildpath.txt -Encoding utf8
 
       - name: Build (Release) with MSBuild
         shell: pwsh
         run: |
           $msbuild = (Get-Content msbuildpath.txt).Trim()
-          & $msbuild "$env:JournalIt\JournalIt.csproj" /p:Configuration=Release
+          & "$msbuild" "$env:JournalIt\JournalIt.csproj" /p:Configuration=Release
+
 
       - name: Upload Release EXE artifact
         uses: actions/upload-artifact@v4
