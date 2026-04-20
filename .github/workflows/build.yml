@@ -5,31 +5,35 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  # optional: opt into Node.js 24 now (or remove to ignore)
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET
+      - name: Setup .NET (optional for SDK tasks)
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'    # adjust to project's target (6.0, 7.0, etc.)
+          dotnet-version: '6.0.x'   # not required for classic .NET Framework builds but safe
 
-      - name: Restore
+      - name: Restore (if solution)
         run: dotnet restore
 
-      - name: Build (Release)
-        run: dotnet build -c Release --no-restore
+      - name: Build (Release) using msbuild
+        run: msbuild /p:Configuration=Release
 
       - name: Publish for win-x64
         run: |
-          cd JournalIt/ # replace with actual folder containing the .csproj (or remove if root)
+          cd JournalIt
           dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true --self-contained false -o publish
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: JournalIt-windowsx64-exe
-          path: |
-            JournalIt/publish/**
+          name: JournalIt-windows-exe
+          path: JournalIt/publish/**
