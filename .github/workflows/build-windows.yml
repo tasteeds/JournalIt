@@ -39,5 +39,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: JournalIt-windows-exe
-          path: JournalIt/JournalIt/bin/Release/**/*
+          path: '**/bin/Release/**/*'
 
