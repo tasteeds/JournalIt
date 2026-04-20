@@ -39,4 +39,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: JournalIt-windows-exe
-          path: ${{ env.JournalIt}}\bin\Release\**\*
+          path: JournalIt/JournalIt/bin/Release/**/*
+
